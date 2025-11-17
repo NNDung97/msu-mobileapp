@@ -5,7 +5,7 @@ Dự án hướng đến việc cung cấp trải nghiệm nhanh, ổn định, 
 
 🚀 Tính năng chính
 
-🔐 Đăng nhập / Xác thực người dùng
+🔐 Đăng nhập / Xác thực người dùng bằng wallet ID
 
 📊 Xem thông tin cá nhân / dữ liệu theo tài khoản
 
@@ -14,8 +14,6 @@ Dự án hướng đến việc cung cấp trải nghiệm nhanh, ổn định, 
 🎨 UI hiện đại, responsive
 
 ⚙️ Kết nối API backend (Node.js/NestJS hoặc service khác)
-
-🌓 Hỗ trợ Dark Mode (tuỳ chọn)
 
 📂 Cấu trúc dự án
 lib/
@@ -67,4 +65,4 @@ Bạn có thể mở issue, gửi pull request, hoặc trao đổi thêm trong r
 
 📄 License
 
-Dự án thuộc quyền sở hữu của MSU, chỉ sử dụng nội bộ (hoặc ghi license bạn muốn).
+Developed by DungNN97 — All Rights Reserved.
