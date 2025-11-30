@@ -33,7 +33,7 @@ class ApStat {
 
 // Class ApStatService và hàm fetchApStats không cần thay đổi
 class ApStatService {
-  final String baseUrl = 'http://10.0.2.2:3000/api/character'; // 👈 base URL
+  final String baseUrl = 'https://msu-nodeserver.vercel.app/api/character'; // 👈 base URL
 
   /// Gọi API: /api/character/{accessKey}/ap-stat
   Future<List<ApStat>> fetchApStats(String accessKey) async {
@@ -44,10 +44,10 @@ class ApStatService {
       final data = jsonDecode(response.body);
       final hyperStatData = data['data']['apStat'] as Map<String, dynamic>;
 
-      // Lọc bỏ các giá trị null
+      // Lọc bỏ các giá trị null và đảm bảo e.value là Map<String, dynamic>
       return hyperStatData.entries
-          .where((e) => e.value != null)
-          .map((e) => ApStat.fromJson(e.key, e.value))
+          .where((e) => e.value != null && e.value is Map)
+          .map((e) => ApStat.fromJson(e.key, (e.value as Map).cast<String, dynamic>()))
           .toList();
     } else {
       throw Exception(

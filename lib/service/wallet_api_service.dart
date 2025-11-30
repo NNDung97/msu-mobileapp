@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class WalletApiService {
   // baseUrl của server Node.js
-  static const String baseUrl = "http://10.0.2.2:3000/api";
+  static const String baseUrl = "https://msu-nodeserver.vercel.app/api";
 
   // Hàm login-wallet
   static Future<Map<String, dynamic>?> loginWallet(String walletAddress) async {

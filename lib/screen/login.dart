@@ -100,22 +100,31 @@ class _LoginPageState extends State<LoginPage> {
       ),
       body: Stack(
         children: [
-          // Background
+          // Background — scaled to focus the purple center. Adjust `scale` as needed.
           Positioned.fill(
-            child: Transform.scale(
-              scale: 5.0,
-              child: Image.network(
-                "https://msu.io/images/main/section_c/bg_section_c.png",
-                fit: BoxFit.contain,
-                alignment: Alignment.center,
-              ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Transform.scale(
+                  scale: 4, // increase to zoom in more; lower to zoom out
+                  alignment: Alignment.center, // focus on the center (purple area)
+                  child: SizedBox(
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    child: Image.asset(
+                      'lib/assets/images/background.png',
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           Positioned.fill(
             child: Transform.scale(
               scale: 1.0,
-              child: Image.network(
-                "https://msu.io/images/main/section_c/yeti.png",
+              child: Image.asset(
+                "lib/assets/images/yeti.png",
                 fit: BoxFit.contain,
                 alignment: Alignment.bottomLeft,
               ),
@@ -128,8 +137,8 @@ class _LoginPageState extends State<LoginPage> {
             bottom: 0,
             child: Transform.scale(
               scale: 1,
-              child: Image.network(
-                "https://msu.io/images/main/section_c/orange.png",
+              child: Image.asset(
+                "lib/assets/images/orange.png",
                 fit: BoxFit.contain,
                 alignment: Alignment.center,
               ),
@@ -142,8 +151,8 @@ class _LoginPageState extends State<LoginPage> {
             bottom: 500,
             child: Transform.scale(
               scale: 0.55,
-              child: Image.network(
-                "https://msu.io/images/main/section_c/pinkbean.png",
+              child: Image.asset(
+                "lib/assets/images/pinkbean.png",
                 fit: BoxFit.fill,
                 alignment: Alignment.topRight,
               ),
@@ -156,8 +165,8 @@ class _LoginPageState extends State<LoginPage> {
             bottom: 300,
             child: Transform.scale(
               scale: 0.75,
-              child: Image.network(
-                "https://msu.io/images/main/section_c/bishop.png",
+              child: Image.asset(
+                "lib/assets/images/bishop.png",
                 fit: BoxFit.fill,
                 alignment: Alignment.topRight,
               ),

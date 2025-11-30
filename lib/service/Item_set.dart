@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../model/ItemSet.dart';
 
 class ItemSetService {
-  static const String baseUrl = "http://10.0.2.2:3000/api/item-details";
+  static const String baseUrl = "https://msu-nodeserver.vercel.app/api/item-details";
 
   static Future<ItemSet?> fetchItemSet(int? itemID) async {
     if (itemID == null) return null;

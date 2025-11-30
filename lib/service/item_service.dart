@@ -5,8 +5,9 @@ import '../model/items-list-model.dart';
 import '../model/item_detail_model.dart';
 
 class ItemService {
-  static const String itemsbaseUrl = "http://10.0.2.2:3000/api/items";
-  static const String baseUrl = "http://10.0.2.2:3000/api/item-details";
+
+  static const String itemsbaseUrl = "https://msu-nodeserver.vercel.app/api/items";
+  static const String baseUrl = "https://msu-nodeserver.vercel.app/api/item-details";
 
   static Future<ItemDetail?> fetchItemDetail(String accessKey) async {
     try {

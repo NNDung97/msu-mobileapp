@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../model/characters.dart';
 
 class CharacterService {
-  static const String baseUrl = 'http://10.0.2.2:3000/api/account';
+  static const String baseUrl = 'https://msu-nodeserver.vercel.app/api/account';
 
   static Future<List<Character>> fetchCharacters(String walletAddress, int pageNo) async {
     final url = Uri.parse('$baseUrl/$walletAddress/characters?pageNo=$pageNo');
