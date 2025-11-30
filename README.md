@@ -1,16 +1,68 @@
-# msu_app
+📱 MSU App
 
-A new Flutter project.
+Ứng dụng di động được phát triển bằng Flutter, phục vụ cho hệ thống MSU.
+Dự án hướng đến việc cung cấp trải nghiệm nhanh, ổn định, và dễ mở rộng.
 
-## Getting Started
+🚀 Tính năng chính
 
-This project is a starting point for a Flutter application.
+🔐 Đăng nhập / Xác thực người dùng bằng wallet ID
 
-A few resources to get you started if this is your first Flutter project:
+📊 Xem thông tin cá nhân / dữ liệu theo tài khoản
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+🔄 Đồng bộ dữ liệu realtime hoặc định kỳ
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+🎨 UI hiện đại, responsive
+
+⚙️ Kết nối API backend (Node.js/NestJS hoặc service khác)
+
+📂 Cấu trúc dự án
+lib/
+ ├── model/              # Khai báo model dữ liệu
+ ├── providers/          # Provider / State management
+ ├── service/            # Gọi API, xử lý dữ liệu
+ ├── screens/            # Các màn hình giao diện
+ ├── widgets/            # Các widget tái sử dụng
+ └── main.dart           # Điểm khởi chạy ứng dụng
+
+🛠️ Cài đặt & chạy ứng dụng
+1. Clone project
+git clone https://github.com/<username>/msu_app.git
+cd msu_app
+
+2. Cài đặt dependencies
+flutter pub get
+
+3. Chạy ứng dụng
+flutter run
+
+📦 Yêu cầu hệ thống
+
+Flutter SDK (phiên bản mới nhất khuyến nghị)
+
+Dart SDK đi kèm Flutter
+
+Android Studio hoặc Xcode (nếu build cho iOS)
+
+Thiết bị thật hoặc emulator
+
+🔧 Build APK / IPA
+Android:
+flutter build apk --release
+
+iOS:
+flutter build ios --release
+
+🧪 Kiểm thử
+
+Các bài test có thể được đặt tại thư mục test/:
+
+flutter test
+
+🤝 Đóng góp
+
+Mọi đóng góp đều được chào đón.
+Bạn có thể mở issue, gửi pull request, hoặc trao đổi thêm trong repository.
+
+📄 License
+
+Developed by DungNN97 — All Rights Reserved.
