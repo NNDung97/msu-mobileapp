@@ -1,0 +1,49 @@
+{
+  "@@locale": "vi",
+
+  "home": "Trang chủ",
+  "characters": "Nhân vật",
+  "login": "Đăng nhập",
+  "logout": "Đăng xuất",
+
+  "loginRequired": "Chưa đăng nhập",
+  "pleaseLogin": "Vui lòng đăng nhập để xem nhân vật.",
+  "close": "Đóng",
+  "cancel": "Hủy",
+  "logoutConfirm": "Xác nhận đăng xuất",
+  "logoutQuestion": "Bạn có chắc chắn muốn đăng xuất?",
+
+  "featuredEvents": "Sự kiện nổi bật",
+  "exploreTools": "Khám phá công cụ",
+
+  "invalidUrl": "URL không hợp lệ.",
+  "cannotOpen": "Không thể mở",
+
+  "noEvents": "Không có sự kiện mới.",
+
+  "itemDatabase": "Danh sách vật phẩm",
+  "itemDatabaseDesc": "Khám phá cơ sở dữ liệu các vật phẩm NFT trong game.",
+  "browse": "Xem vật phẩm",
+
+  "bossDatabase": "Danh sách Boss",
+  "bossDatabaseDesc": "Thông tin chi tiết về các Boss và phần thưởng.",
+  "view": "Xem",
+
+  "nftViewer": "Xem bộ sưu tập NFT",
+  "nftViewerDesc": "Theo dõi và phân tích tiến trình bộ sưu tập NFT của bạn.",
+
+  "itemTrade": "Lịch sử giao dịch vật phẩm",
+  "itemTradeDesc": "Tìm kiếm và xem lịch sử giao dịch NFT.",
+  "explore": "Khám phá",
+
+  "charTrade": "Lịch sử giao dịch nhân vật",
+  "charTradeDesc": "Theo dõi xu hướng giao dịch nhân vật.",
+
+  "hyperStat": "Tối ưu Hyper Stat",
+  "hyperStatDesc": "Tối ưu hóa chỉ số Hyper Stat hiệu quả.",
+  "optimizeNow": "Tối ưu ngay",
+
+  "search": "Tìm kiếm...",
+  "prev": "Trước",
+  "next": "Sau"
+}

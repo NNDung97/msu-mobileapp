@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../model/items-list-model.dart';
 import '../service/item_service.dart';
 import '../screen/item_details_itemid.dart';
-
-// Giả định: Item, ItemListResponse, ItemService đã tồn tại
+import '../theme/app_colors.dart';
+import '../l10n/app_localizations.dart';
 
 class ItemListScreen extends StatefulWidget {
   const ItemListScreen({super.key});
@@ -19,12 +19,9 @@ class _ItemListScreenState extends State<ItemListScreen> {
   int _currentPage = 1;
   int _totalPages = 1;
 
-  // --- FILTER STATE (ĐÃ SỬA LỖI) ---
   String _searchQuery = '';
-  // 💡 FIX 1: Khởi tạo giá trị ban đầu là 'All' (String)
   String _selectedCategory = 'All';
 
-  // Giả định danh sách category có thể có
   final List<String> _categories = [
     'All',
     'Weapon',
@@ -33,12 +30,6 @@ class _ItemListScreenState extends State<ItemListScreen> {
     'Shoes',
     'Accessory',
   ];
-
-  // --- UI/UX: Màu sắc tối ưu ---
-  static const Color primaryColor = Color(0xFFF9A825);
-  static const Color darkBg = Color(0xFF0F0821);
-  static const Color darkCardBg = Color(0xFF1B0F33);
-  static const Color inputFillColor = Color(0xFF2B1F45);
 
   @override
   void initState() {
@@ -52,11 +43,10 @@ class _ItemListScreenState extends State<ItemListScreen> {
     try {
       final response = await _itemService.fetchItems(
         page: _currentPage,
-        // Giả định bạn đã đổi tên tham số thành 'query' hoặc giữ nguyên 'name'
         name: _searchQuery,
-        // 💡 FIX 2: Gửi null cho API nếu giá trị hiện tại là 'All'
         category: _selectedCategory != 'All' ? _selectedCategory : null,
       );
+
       if (mounted) {
         setState(() {
           _items = response.data;
@@ -65,9 +55,9 @@ class _ItemListScreenState extends State<ItemListScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Lỗi khi tải dữ liệu: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Lỗi tải dữ liệu: $e")),
+        );
         setState(() {
           _items = [];
           _totalPages = 1;
@@ -95,37 +85,34 @@ class _ItemListScreenState extends State<ItemListScreen> {
     _fetchItems();
   }
 
-  // --- WIDGET TỐI ƯU: Item Grid Card (Giữ nguyên) ---
+  // ---------------------------------
+  // Grid Item Card
+  // ---------------------------------
   Widget _buildItemGridCard(Item item) {
     return InkWell(
       onTap: () {
-        // if (item.link != null) {
-        //   ScaffoldMessenger.of(context).showSnackBar(
-        //     SnackBar(content: Text("Mở chi tiết Item: ${item.name}")),
-        //   );
-        // }
         Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    opaque: false,
-                    pageBuilder: (_, __, ___) => ItemDetailScreen(
-                      itemId: item.itemID,
-                      imageUrl: item.image ?? '', // Truyền URL hình ảnh
-                    ),
-                  ),
-                );
+          context,
+          PageRouteBuilder(
+            opaque: false,
+            pageBuilder: (_, __, ___) => ItemDetailScreen(
+              itemId: item.itemID,
+              imageUrl: item.image ?? '',
+            ),
+          ),
+        );
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
-          color: darkCardBg,
+          color: AppColors.card,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: primaryColor.withOpacity(0.3), width: 1),
+          border: Border.all(color: AppColors.border, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.4),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
+              color: AppColors.shadow.withOpacity(0.5),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -137,22 +124,15 @@ class _ItemListScreenState extends State<ItemListScreen> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  color: Colors.grey.shade900,
+                  color: AppColors.cardGradient,
                   child: item.image != null
                       ? Image.network(
-                          item.image!,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const Icon(
-                            Icons.inventory_2,
-                            color: Colors.white54,
-                            size: 40,
-                          ),
-                        )
-                      : const Icon(
-                          Icons.inventory_2,
-                          color: Colors.white54,
-                          size: 40,
-                        ),
+                    item.image!,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.inventory_2, color: AppColors.textSecondary, size: 40),
+                  )
+                      : const Icon(Icons.inventory_2, color: AppColors.textSecondary, size: 40),
                 ),
               ),
             ),
@@ -160,13 +140,12 @@ class _ItemListScreenState extends State<ItemListScreen> {
             SizedBox(
               height: 58,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
                     child: Text(
                       item.name ?? "Không tên",
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.text,
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
@@ -175,18 +154,14 @@ class _ItemListScreenState extends State<ItemListScreen> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Text(
-                      item.category ?? "Unknown",
-                      style: TextStyle(
-                        color: primaryColor.withOpacity(0.8),
-                        fontSize: 11,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
+                  Text(
+                    item.category ?? "Unknown",
+                    style: const TextStyle(
+                      color: AppColors.iconPrimary,
+                      fontSize: 11,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -197,45 +172,45 @@ class _ItemListScreenState extends State<ItemListScreen> {
     );
   }
 
-  // --- WIDGET TỐI ƯU: AppBar với Filter ---
+  // -------------------------------
+  // Filter AppBar
+  // -------------------------------
   PreferredSizeWidget _buildFilterAppBar() {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(100.0),
+      preferredSize: const Size.fromHeight(100),
       child: AppBar(
-        title: const Text(
-          "Item Database",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        backgroundColor: AppColors.appBar,
+        elevation: 2,
+        iconTheme: const IconThemeData(color: AppColors.text),
+        title: Text(
+          AppLocalizations.of(context)!.itemDatabase,
+          style: TextStyle(
+            color: AppColors.text,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: darkCardBg,
-        iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50.0),
+          preferredSize: const Size.fromHeight(60),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12.0,
-              vertical: 8.0,
-            ),
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
             child: Row(
               children: [
-                // 1. Filter theo tên (TextField)
+                // Search Bar
                 Expanded(
                   child: TextField(
-                    cursorColor: primaryColor,
-                    style: const TextStyle(color: Colors.white),
+                    cursorColor: AppColors.iconPrimary,
+                    style: const TextStyle(color: AppColors.text),
                     decoration: InputDecoration(
-                      hintText: 'Tìm kiếm theo tên...',
-                      hintStyle: TextStyle(color: Colors.white54, fontSize: 14),
-                      prefixIcon: const Icon(Icons.search, color: primaryColor),
+                      hintText: AppLocalizations.of(context)!.search,
+                      hintStyle: const TextStyle(color: AppColors.textSecondary),
+                      prefixIcon: const Icon(Icons.search, color: AppColors.iconPrimary),
                       filled: true,
-                      fillColor: inputFillColor,
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 10.0,
-                      ),
+                      fillColor: AppColors.cardGradient,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
                       ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                     onChanged: (value) {
                       _searchQuery = value;
@@ -245,45 +220,30 @@ class _ItemListScreenState extends State<ItemListScreen> {
                 ),
                 const SizedBox(width: 10),
 
-                // 2. Filter theo Category (Dropdown)
+                // Dropdown Category
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
-                    color: inputFillColor,
+                    color: AppColors.cardGradient,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: primaryColor.withOpacity(0.5)),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
-                      // 💡 FIX 3: Dùng giá trị String _selectedCategory
                       value: _selectedCategory,
-                      hint: const Text(
-                        'Category',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      dropdownColor: darkCardBg,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                      icon: const Icon(
-                        Icons.arrow_drop_down,
-                        color: primaryColor,
-                      ),
+                      dropdownColor: AppColors.card,
+                      icon: const Icon(Icons.arrow_drop_down, color: AppColors.iconPrimary),
+                      style: const TextStyle(color: AppColors.text),
                       items: _categories.map((String value) {
-                        return DropdownMenuItem<String>(
-                          // 💡 FIX 4: Gán giá trị String (bao gồm cả 'All')
+                        return DropdownMenuItem(
                           value: value,
-                          child: Text(
-                            value,
-                            style: TextStyle(
-                              color: value == 'All'
-                                  ? primaryColor
-                                  : Colors.white,
-                            ),
-                          ),
+                          child: Text(value,
+                              style: TextStyle(
+                                  color: value == "All" ? AppColors.iconPrimary : AppColors.text)),
                         );
                       }).toList(),
                       onChanged: (String? newValue) {
                         setState(() {
-                          // Giá trị không còn là null nữa do đã sửa ở bước 4
                           _selectedCategory = newValue!;
                           _onFilterChanged();
                         });
@@ -299,39 +259,47 @@ class _ItemListScreenState extends State<ItemListScreen> {
     );
   }
 
-  // --- WIDGET TỐ ƯU: Pagination Bar (Giữ nguyên) ---
+  // -------------------------------
+  // New Pagination (Kurumi Style)
+  // -------------------------------
   Widget _buildPagination() {
     return Container(
-      padding: const EdgeInsets.all(12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: darkCardBg,
+        color: AppColors.card,
+        border: Border(top: BorderSide(color: AppColors.border)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withOpacity(0.4),
             blurRadius: 10,
-            offset: const Offset(0, -3),
+            offset: const Offset(0, -4),
           ),
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildPaginationButton(
-            label: "← Trang trước",
-            isEnabled: _currentPage > 1 && !_isLoading,
+          // Prev Button
+          _buildPageButton(
+            label: AppLocalizations.of(context)!.prev,
+            enabled: _currentPage > 1,
             onPressed: () => _changePage(_currentPage - 1),
           ),
+
+          // Page Indicator
           Text(
-            "Trang $_currentPage / $_totalPages",
+            "$_currentPage / $_totalPages",
             style: const TextStyle(
-              color: primaryColor,
+              color: AppColors.text,
               fontWeight: FontWeight.bold,
               fontSize: 15,
             ),
           ),
-          _buildPaginationButton(
-            label: "Trang sau →",
-            isEnabled: _currentPage < _totalPages && !_isLoading,
+
+          // Next Button
+          _buildPageButton(
+            label: AppLocalizations.of(context)!.next,
+            enabled: _currentPage < _totalPages,
             onPressed: () => _changePage(_currentPage + 1),
           ),
         ],
@@ -339,98 +307,99 @@ class _ItemListScreenState extends State<ItemListScreen> {
     );
   }
 
-  Widget _buildPaginationButton({
+  Widget _buildPageButton({
     required String label,
-    required bool isEnabled,
+    required bool enabled,
     required VoidCallback onPressed,
   }) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        gradient: isEnabled
+        gradient: enabled
             ? const LinearGradient(
-                colors: [Color(0xFFFB8C00), Color(0xFFF9A825)],
-              )
+          colors: [
+            AppColors.buttonGradientStart,
+            AppColors.buttonGradientEnd,
+          ],
+        )
             : null,
+        borderRadius: BorderRadius.circular(8),
       ),
       child: ElevatedButton(
-        onPressed: isEnabled ? onPressed : null,
+        onPressed: enabled ? onPressed : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isEnabled
-              ? Colors.transparent
-              : Colors.grey.shade700,
+          backgroundColor: enabled ? Colors.transparent : AppColors.cardGradient,
           foregroundColor: Colors.white,
+          disabledForegroundColor: Colors.white38,
           shadowColor: Colors.transparent,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        ),
+        child: Text(label,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
       ),
     );
   }
 
-  // --- WIDGET CHÍNH: Scaffold ---
+  // -----------------------------------
+  // Build UI
+  // -----------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: darkBg,
+      backgroundColor: AppColors.background,
       appBar: _buildFilterAppBar(),
       body: Stack(
         children: [
           _items.isEmpty && !_isLoading
               ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.inventory_2_outlined,
-                        size: 60,
-                        color: Colors.white38,
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "Không tìm thấy Item nào.",
-                        style: TextStyle(color: Colors.white54, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                )
-              : Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                          childAspectRatio: 0.7,
-                        ),
-                    itemCount: _items.length,
-                    itemBuilder: (context, index) =>
-                        _buildItemGridCard(_items[index]),
-                  ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.inventory_2_outlined,
+                    size: 60, color: AppColors.textSecondary),
+                SizedBox(height: 10),
+                Text(
+                  "Không tìm thấy Item nào.",
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
+              ],
+            ),
+          )
+              : Padding(
+            padding: const EdgeInsets.all(12),
+            child: GridView.builder(
+              itemCount: _items.length,
+              gridDelegate:
+              const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 0.72,
+              ),
+              itemBuilder: (_, i) => _buildItemGridCard(_items[i]),
+            ),
+          ),
+
           if (_isLoading)
             Container(
-              color: darkBg.withOpacity(0.7),
+              color: AppColors.background.withOpacity(0.7),
               child: const Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: primaryColor),
+                    CircularProgressIndicator(
+                        color: AppColors.buttonGradientStart),
                     SizedBox(height: 15),
                     Text(
                       "Đang tải Item...",
-                      style: TextStyle(color: Colors.white70, fontSize: 16),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                   ],
                 ),
               ),
-            ),
+            )
         ],
       ),
       bottomNavigationBar: _buildPagination(),

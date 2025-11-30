@@ -1,0 +1,49 @@
+{
+  "@@locale": "en",
+
+  "home": "Home",
+  "characters": "Characters",
+  "login": "Login",
+  "logout": "Logout",
+
+  "loginRequired": "Login required",
+  "pleaseLogin": "Please login to see characters.",
+  "close": "Close",
+  "cancel": "Cancel",
+  "logoutConfirm": "Confirm logout",
+  "logoutQuestion": "Are you sure you want to logout?",
+
+  "featuredEvents": "Featured Events",
+  "exploreTools": "Explore Tools",
+
+  "invalidUrl": "Invalid URL.",
+  "cannotOpen": "Cannot open",
+
+  "noEvents": "No recent events available.",
+
+  "itemDatabase": "Item Database",
+  "itemDatabaseDesc": "Explore a comprehensive database of in-game NFT items.",
+  "browse": "Browse Items",
+
+  "bossDatabase": "Boss Database",
+  "bossDatabaseDesc": "Detailed information on MapleStory bosses and loot.",
+  "view": "View",
+
+  "nftViewer": "NFT Collection Viewer",
+  "nftViewerDesc": "Track and analyze your NFT collection progress.",
+
+  "itemTrade": "Item Trade History",
+  "itemTradeDesc": "Search and explore NFT trade history and data.",
+  "explore": "Explore",
+
+  "charTrade": "Character Trade History",
+  "charTradeDesc": "Monitor character trades and trends.",
+
+  "hyperStat": "Hyper Stat Optimizer",
+  "hyperStatDesc": "Optimize your Hyper Stats efficiently.",
+  "optimizeNow": "Optimize Now",
+
+  "search": "Search...",
+  "prev": "Prev",
+  "next": "Next"
+}
