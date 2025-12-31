@@ -1,8 +1,8 @@
 name: msu_app
-description: "A new Flutter project."
+description: "A mobile application for MSU students to track their academic progress."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0
 
 environment:
   sdk: ^3.9.2
@@ -17,11 +17,38 @@ dependencies:
   provider: ^6.0.5
   flutter_secure_storage: ^9.0.0
   url_launcher: ^6.3.0
+  socket_io_client: ^2.0.3
+  onesignal_flutter: ^5.1.2
+  dio: ^5.4.0
+  flutter_native_splash: ^2.4.1
+  flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+
+flutter_native_splash:
+  color: "#000000"
+  background_image: lib/assets/images/msutrackersplash.png
+
+  android_12:
+    color: "#000000"
+    image: lib/assets/images/msutracker.png
+    icon_background_color: "#6A1B9A"
+
+  android: true
+  ios: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+
+  image_path: lib/assets/images/msutrackericonv1.png
+
+  android_12:
+    foreground_image: lib/assets/images/msutrackericonv1.png
+    icon_background_color: "#6A1B9A"
 
 flutter:
   uses-material-design: true

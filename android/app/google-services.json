@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "515596834848",
+    "project_id": "msu-app-951a5",
+    "storage_bucket": "msu-app-951a5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:515596834848:android:0055a554ff6a731f368445",
+        "android_client_info": {
+          "package_name": "com.example.msu_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDccZxqMbCKD3ag_d6oNUsiVqGtpbQFZz4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

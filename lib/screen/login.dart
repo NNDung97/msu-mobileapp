@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/character_provider.dart';
+import '../providers/notification_provider.dart';
+import '../providers/auth_provider.dart';
 import '../service/wallet_api_service.dart';
+import '../service/auth_storage.dart';
+import '../model/login_result.dart';
 import '../model/characters.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,73 +20,87 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _walletController = TextEditingController();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
-  String _walletAddress = '';
 
-  // Lưu địa chỉ ví vào secure storage
-  Future<void> _saveWalletAddress(String address) async {
-    await _storage.write(key: 'wallet_address', value: address);
+  bool _isLoading = false;
+
+  Future<void> _saveAuth({
+    required String wallet,
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    await _storage.write(key: 'wallet_address', value: wallet);
+    await _storage.write(key: 'access_token', value: accessToken);
+    await _storage.write(key: 'refresh_token', value: refreshToken);
   }
 
-  // Đọc địa chỉ ví từ secure storage (Không dùng trong luồng này, nhưng giữ lại)
-  Future<String?> _readWalletAddress() async {
-    return await _storage.read(key: 'wallet_address');
+  bool _isValidWallet(String wallet) {
+    return wallet.startsWith('0x') && wallet.length >= 40;
   }
 
-  // Xoá địa chỉ ví khỏi secure storage (Không dùng trong luồng này, nhưng giữ lại)
-  Future<void> _deleteWalletAddress() async {
-    await _storage.delete(key: 'wallet_address');
-  }
+  Future<void> _submitWallet() async {
+    final wallet = _walletController.text.trim();
 
-  void _submitWallet() async {
-    setState(() {
-      _walletAddress = _walletController.text;
-    });
-
-    // 💡 Thêm chỉ báo đang tải (loading indicator)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Đang kết nối và tải dữ liệu...")),
-    );
-
-    // Gọi API
-    final data = await WalletApiService.loginWallet(_walletAddress);
-
-    if (data == null) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    if (!_isValidWallet(wallet)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("❌ Không thể đăng nhập ví! Vui lòng kiểm tra địa chỉ.")),
+        const SnackBar(content: Text("❌ Địa chỉ ví không hợp lệ")),
       );
       return;
     }
 
-    // Parse characters
-    final charactersJson = data["characters"]?["data"]?["characters"];
-    List<Character> characters = [];
+    setState(() => _isLoading = true);
 
-    if (charactersJson != null && charactersJson is List) {
-      characters = charactersJson
-          .map<Character>((c) => Character.fromJson(c))
-          .toList();
+    try {
+      // ✅ MODEL, KHÔNG PHẢI MAP
+      final LoginResult? result = await WalletApiService.loginWallet(wallet);
+
+      if (result == null) {
+        throw Exception("Login failed");
+      }
+      // 🔐 Lưu auth
+        // await AuthStorage.saveLogin(result);
+        await context.read<AuthProvider>().login(result);
+
+
+        if (!context.mounted) return;
+
+      // 🔐 Lưu auth
+      // await _saveAuth(
+      //   wallet: wallet,
+      //   accessToken: result.accessToken,
+      //   refreshToken: result.refreshToken,
+      // );
+
+      // 👤 Set characters vào Provider
+      Provider.of<CharacterProvider>(
+        context,
+        listen: false,
+      ).setCharacters(result.characters);
+
+      // 🔔 INIT SOCKET + NOTIFICATION
+      // Provider.of<NotificationProvider>(
+      //   context,
+      //   listen: false,
+      // ).initSocket(result.userId, result.accessToken);
+      // 🔔 LẤY NotificationProvider
+      final notifyProvider = Provider.of<NotificationProvider>(
+        context,
+        listen: false,
+      );
+
+      // 🔔 INIT SOCKET
+      notifyProvider.initSocket(result.userId, result.accessToken);
+
+      // 🔥 SYNC UNREAD COUNT (DÒNG BẠN THIẾU)
+      await notifyProvider.syncUnreadCount();
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("❌ Đăng nhập thất bại, vui lòng thử lại")),
+      );
+    } finally {
+      setState(() => _isLoading = false);
     }
-
-    // 1. Cập nhật Provider với danh sách nhân vật
-    Provider.of<CharacterProvider>(context, listen: false)
-        .setCharacters(characters);
-
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("✅ Đăng nhập ví thành công. Tải ${characters.length} nhân vật.")),
-    );
-
-    // 2. Lưu local
-    await _saveWalletAddress(_walletAddress);
-
-    // 3. 🚨 SỬA LỖI ĐIỀU HƯỚNG: Sử dụng pop(true) để trả kết quả thành công về HomePage
-    // Thay vì điều hướng (pushAndRemoveUntil), chúng ta thoát khỏi trang Login và trả về true.
-    Navigator.pop(context, true); 
-
-    // Debug log (không cần thiết trong production, có thể xóa)
-    // String? savedWallet = await _readWalletAddress();
-    // print("Saved wallet address: $savedWallet");
   }
 
   @override
@@ -92,21 +111,18 @@ class _LoginPageState extends State<LoginPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            // Khi nhấn nút back, trả về false để báo hiệu không thành công
-            Navigator.pop(context, false); 
-          },
+          onPressed: () => Navigator.pop(context, false),
         ),
       ),
       body: Stack(
         children: [
-          // Background — scaled to focus the purple center. Adjust `scale` as needed.
+          // ===== BACKGROUND — GIỮ NGUYÊN =====
           Positioned.fill(
             child: LayoutBuilder(
               builder: (context, constraints) {
                 return Transform.scale(
-                  scale: 4, // increase to zoom in more; lower to zoom out
-                  alignment: Alignment.center, // focus on the center (purple area)
+                  scale: 4,
+                  alignment: Alignment.center,
                   child: SizedBox(
                     width: constraints.maxWidth,
                     height: constraints.maxHeight,
@@ -173,14 +189,13 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
 
-          // Form nhập wallet
+          // ===== FORM LOGIN (logic đã sửa) =====
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  // 💡 UI: Tối ưu TextField với Dark Theme
+                children: [
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.9),
@@ -195,22 +210,28 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     child: TextField(
                       controller: _walletController,
-                      style: const TextStyle(fontSize: 16, color: Colors.black87),
+                      enabled: !_isLoading,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none, // Bỏ border vì đã dùng Container
+                          borderSide: BorderSide.none,
                         ),
                         hintText: 'Nhập địa chỉ ví',
                         contentPadding: const EdgeInsets.all(16),
-                        prefixIcon: const Icon(Icons.account_balance_wallet, color: Colors.deepPurple),
-                        hintStyle: const TextStyle(fontSize: 16, color: Colors.grey),
+                        prefixIcon: const Icon(
+                          Icons.account_balance_wallet,
+                          color: Colors.deepPurple,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // 💡 UI: Tối ưu nút Login
                   ElevatedButton(
+                    onPressed: _isLoading ? null : _submitWallet,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 40,
@@ -218,18 +239,27 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       backgroundColor: Colors.deepPurpleAccent,
                       foregroundColor: Colors.white,
-                      shadowColor: Colors.deepPurple.shade900,
                       elevation: 10,
-                      textStyle: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    onPressed: _submitWallet,
-                    child: const Text('Login'),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Login',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ],
               ),
@@ -240,3 +270,153 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
+// import 'package:flutter/material.dart';
+// import 'package:provider/provider.dart';
+
+// import '../providers/character_provider.dart';
+// import '../providers/notification_provider.dart';
+// import '../service/wallet_api_service.dart';
+// import '../service/auth_storage.dart';
+// import '../model/login_result.dart';
+
+// class LoginPage extends StatefulWidget {
+//   const LoginPage({super.key});
+
+//   @override
+//   State<LoginPage> createState() => _LoginPageState();
+// }
+
+// class _LoginPageState extends State<LoginPage> {
+//   final TextEditingController _walletController = TextEditingController();
+//   bool _isLoading = false;
+
+//   bool _isValidWallet(String wallet) {
+//     return wallet.startsWith('0x') && wallet.length >= 40;
+//   }
+
+//   Future<void> _submitWallet() async {
+//     final wallet = _walletController.text.trim();
+
+//     if (!_isValidWallet(wallet)) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text("❌ Địa chỉ ví không hợp lệ")),
+//       );
+//       return;
+//     }
+
+//     setState(() => _isLoading = true);
+
+//     try {
+//       // ===== LOGIN API =====
+//       final LoginResult? result =
+//           await WalletApiService.loginWallet(wallet);
+
+//       if (result == null) {
+//         throw Exception("Login failed");
+//       }
+
+//       // ===== SAVE AUTH (CHỈ 1 CHỖ) =====
+//       await AuthStorage.saveLogin(result);
+
+//       if (!context.mounted) return;
+
+//       // ===== RESET STATE CŨ =====
+//       Provider.of<CharacterProvider>(context, listen: false).clear();
+//       Provider.of<NotificationProvider>(context, listen: false)
+//           .disconnectSocket();
+
+//       // ===== SET CHARACTER =====
+//       Provider.of<CharacterProvider>(
+//         context,
+//         listen: false,
+//       ).setCharacters(result.characters);
+
+//       // ===== INIT NOTIFICATION =====
+//       final notifyProvider =
+//           Provider.of<NotificationProvider>(context, listen: false);
+
+//       notifyProvider.initSocket(
+//         result.userId,
+//         result.accessToken,
+//       );
+
+//       await notifyProvider.syncUnreadCount();
+
+//       if (!context.mounted) return;
+//       Navigator.pop(context, true);
+//     } catch (e) {
+//       if (!context.mounted) return;
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(
+//           content: Text("❌ Đăng nhập thất bại, vui lòng thử lại"),
+//         ),
+//       );
+//     } finally {
+//       if (mounted) {
+//         setState(() => _isLoading = false);
+//       }
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         backgroundColor: Colors.transparent,
+//         elevation: 0,
+//         leading: IconButton(
+//           icon: const Icon(Icons.arrow_back, color: Colors.white),
+//           onPressed: () => Navigator.pop(context, false),
+//         ),
+//       ),
+//       body: Stack(
+//         children: [
+//           Positioned.fill(
+//             child: Image.asset(
+//               'lib/assets/images/background.png',
+//               fit: BoxFit.cover,
+//             ),
+//           ),
+//           Center(
+//             child: Padding(
+//               padding: const EdgeInsets.all(16),
+//               child: Column(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: [
+//                   Container(
+//                     decoration: BoxDecoration(
+//                       color: Colors.white.withOpacity(0.9),
+//                       borderRadius: BorderRadius.circular(10),
+//                     ),
+//                     child: TextField(
+//                       controller: _walletController,
+//                       enabled: !_isLoading,
+//                       decoration: const InputDecoration(
+//                         hintText: 'Nhập địa chỉ ví',
+//                         prefixIcon:
+//                             Icon(Icons.account_balance_wallet),
+//                         border: InputBorder.none,
+//                         contentPadding: EdgeInsets.all(16),
+//                       ),
+//                     ),
+//                   ),
+//                   const SizedBox(height: 20),
+//                   ElevatedButton(
+//                     onPressed: _isLoading ? null : _submitWallet,
+//                     child: _isLoading
+//                         ? const CircularProgressIndicator(
+//                             strokeWidth: 2,
+//                             color: Colors.white,
+//                           )
+//                         : const Text("Login"),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }

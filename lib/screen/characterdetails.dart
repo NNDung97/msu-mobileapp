@@ -32,7 +32,7 @@ class _CharacterDetailPageState extends State<CharacterDetailPage> with SingleTi
   @override
   void initState() {
     super.initState();
-    equipmentFuture = Future.delayed(const Duration(milliseconds: 500), () async {
+    equipmentFuture = Future.delayed(const Duration(milliseconds: 1500), () async {
       return await CharacterEquipmentService().fetchWearingData(
         widget.character.assetKey,
       );

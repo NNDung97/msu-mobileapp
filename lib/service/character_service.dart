@@ -3,15 +3,18 @@ import 'package:http/http.dart' as http;
 import '../model/characters.dart';
 
 class CharacterService {
-  static const String baseUrl = 'https://msu-nodeserver.vercel.app/api/account';
+  // static const String baseUrl = 'https://msu-nodeserver.vercel.app/api/account';
+  static const String baseUrl = 'http://10.0.2.2:3000/api/account';
+
 
   static Future<List<Character>> fetchCharacters(String walletAddress, int pageNo) async {
     final url = Uri.parse('$baseUrl/$walletAddress/characters?pageNo=$pageNo');
     final response = await http.get(url);
+    print(  'check wallet $walletAddress pageNo $pageNo');
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
-      print(decoded); // In ra dữ liệu nhận được từ API
+      print('check character $decoded'); // In ra dữ liệu nhận được từ API
 
       // Lấy danh sách nhân vật từ data.characters
       final List<dynamic> jsonData = decoded['data']['characters'] ?? [];
