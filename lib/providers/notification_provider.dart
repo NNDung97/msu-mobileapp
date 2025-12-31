@@ -1,4 +1,3 @@
-// lib/providers/notification_provider.dart
 import 'package:flutter/material.dart';
 import '../service/socket_service.dart';
 import '../service/notification_api_service.dart';
@@ -12,76 +11,76 @@ class NotificationProvider with ChangeNotifier {
   List<NotificationItem> get items => _items;
   int get unreadCount => _unreadCount;
 
-  /// Gọi sau khi login
+  /// Gọi 1 lần sau khi login
   void initSocket(String userId, String token) {
     if (_socketInited) return;
-    print('🔔 Initializing socket for notifications with userId: $userId,$token');
+
+    print('🔔 Initializing notification socket');
+
     final socket = SocketService();
     socket.connect(userId, token);
 
+    /// Nhận notification realtime
     socket.onNotification((data) {
       _items.insert(0, NotificationItem.fromSocket(data));
       _unreadCount++;
       notifyListeners();
     });
 
+    /// 🔥 RẤT QUAN TRỌNG: sync lại khi socket reconnect
+    socket.onReconnect(() async {
+      print('🔄 Sync notifications after reconnect');
+      await syncUnreadCount();
+      await loadNotifications();
+    });
+
     _socketInited = true;
   }
 
-  /// Sync khi mở app
+  /// Sync badge (gọi khi mở app / resume)
   Future<void> syncUnreadCount() async {
-    print( '🔔 Syncing unread notification count');
     _unreadCount = await NotificationApiService.getUnreadCount();
-    print(  '🔔 Unread notification count: $_unreadCount');
     notifyListeners();
   }
 
+  /// Load full notification list
   Future<void> loadNotifications() async {
-  final list = await NotificationApiService.getNotifications();
+    final list = await NotificationApiService.getNotifications();
 
-  _items
-    ..clear()
-    ..addAll(list);
+    _items
+      ..clear()
+      ..addAll(list);
 
-  _unreadCount = _items.where((e) => !e.isRead).length;
-  notifyListeners();
-}
-
-
-  // void markAsRead(String id) {
-  //   NotificationApiService.markAsRead(id);
-  //   _unreadCount = (_unreadCount - 1).clamp(0, 999);
-  //   notifyListeners();
-  // }
-  Future<void> markAsRead(String id) async {
-  final index = _items.indexWhere((e) => e.id == id);
-  if (index == -1) return;
-
-  // 1. Optimistic update: update local state
-  _items[index] = _items[index].copyWith(isRead: true);
-
-  // 2. Update unread count an toàn
-  _unreadCount = (_unreadCount - 1).clamp(0, 999);
-
-  notifyListeners();
-
-  // 3. Call API
-  try {
-    await NotificationApiService.markAsRead(id);
-  } catch (e) {
-    // rollback nếu API fail
-    _items[index] = _items[index].copyWith(isRead: false);
-    _unreadCount = (_unreadCount + 1).clamp(0, 999);
+    _unreadCount = _items.where((e) => !e.isRead).length;
     notifyListeners();
-    rethrow;
   }
-}
 
+  /// Mark single notification as read (optimistic)
+  Future<void> markAsRead(String id) async {
+    final index = _items.indexWhere((e) => e.id == id);
+    if (index == -1) return;
 
+    _items[index] = _items[index].copyWith(isRead: true);
+    _unreadCount = (_unreadCount - 1).clamp(0, 999);
+    notifyListeners();
+
+    try {
+      await NotificationApiService.markAsRead(id);
+    } catch (e) {
+      // rollback nếu fail
+      _items[index] = _items[index].copyWith(isRead: false);
+      _unreadCount = (_unreadCount + 1).clamp(0, 999);
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// Logout
   void disconnectSocket() {
     SocketService().disconnect();
     _socketInited = false;
   }
+
   void clear() {
     _items.clear();
     _unreadCount = 0;
