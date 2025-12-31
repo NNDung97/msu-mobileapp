@@ -5,7 +5,8 @@ import 'package:http/http.dart' as http; // Import thư viện http
 import '../model/boss_model.dart';
 
 // Định nghĩa URL API
-const String BOSS_API_URL = 'https://msu-nodeserver.vercel.app/api/boss';
+// const String BOSS_API_URL = 'https://msu-nodeserver.vercel.app/api/boss';
+const String BOSS_API_URL = 'https://msu-nodeserver-production.up.railway.app/api/boss';
 
 class BossService {
   

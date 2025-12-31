@@ -10,7 +10,7 @@ class SocketService {
 
   void connect(String userId, String token) {
     socket = IO.io(
-      'http://10.0.2.2:3000',
+      'https://msu-nodeserver-production.up.railway.app',
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect()

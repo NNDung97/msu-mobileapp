@@ -4,7 +4,7 @@ import '../model/characters.dart';
 
 class CharacterService {
   // static const String baseUrl = 'https://msu-nodeserver.vercel.app/api/account';
-  static const String baseUrl = 'http://10.0.2.2:3000/api/account';
+  static const String baseUrl = 'https://msu-nodeserver-production.up.railway.app/api/account';
 
 
   static Future<List<Character>> fetchCharacters(String walletAddress, int pageNo) async {

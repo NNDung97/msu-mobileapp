@@ -9,7 +9,7 @@ class AuthInterceptor extends Interceptor {
   final List<Future<void> Function()> _queue = [];
 
   final Dio _refreshDio = Dio(
-    BaseOptions(baseUrl: 'http://10.0.2.2:3000/api'),
+    BaseOptions(baseUrl: 'https://msu-nodeserver-production.up.railway.app/api'),
   );
 
   @override

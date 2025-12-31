@@ -5,7 +5,7 @@ class CharacterEquipmentService {
   final String baseUrl;
 
   CharacterEquipmentService({
-    this.baseUrl = 'https://msu-nodeserver.vercel.app/api/character',
+    this.baseUrl = 'https://msu-nodeserver-production.up.railway.app/api/character',
   });
 
   /// Lấy thông tin trang bị nhân vật (decoEquip, equip, pet)

@@ -25,7 +25,7 @@ class HyperStat {
 }
 
 class HyperStatService {
-  final String baseUrl = 'https://msu-nodeserver.vercel.app/api/character'; // 👈 base URL
+  final String baseUrl = 'https://msu-nodeserver-production.up.railway.app/api/character';
 
   /// Gọi API: /api/character/{accessKey}/hyper-stat
   Future<List<HyperStat>> fetchHyperStats(String accessKey) async {

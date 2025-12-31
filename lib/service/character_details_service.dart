@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../model/CharacterDetails.dart';
 
 class CharacterDetailsService {
-  static const String baseUrl = 'https://msu-nodeserver.vercel.app/api/character';
+  static const String baseUrl = 'https://msu-nodeserver-production.up.railway.app/api/character';
 
   Future<CharacterCommon?> fetchCharacterDetails(String accessKey) async {
     try {

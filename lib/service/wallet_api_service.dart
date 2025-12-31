@@ -5,7 +5,7 @@ import '../model/login_result.dart';
 class WalletApiService {
   static const String baseUrl =
       // "https://msu-nodeserver.vercel.app/api";
-      "http://10.0.2.2:3000/api";
+      "https://msu-nodeserver-production.up.railway.app/api";
 
   static Future<LoginResult?> loginWallet(String walletAddress) async {
     print('check login wallet $walletAddress');
